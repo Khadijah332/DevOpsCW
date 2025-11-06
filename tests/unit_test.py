@@ -21,10 +21,17 @@ class TestUnit(unittest.TestCase):
 			'clouds': '9'
 		}
 		response = self.client.post('/', data=form_data)
+		#checks app did not crash
+		self.assertEqual(response.status_code, 200)
+
+		#Check that error message is displayed
+		self.assertIn(b"Error processing input", response.data)
 
 	# Complete this function to test that the model can be loaded correctly
 	def test_model_can_be_loaded(self):
 		model = load_model()
+		#checks model is not None
+		self.assertIsNone(model)
 		
 
 	# Test model classification is within the 9 classes, each time for a different class with three different inputs
@@ -32,12 +39,13 @@ class TestUnit(unittest.TestCase):
 		test_input = np.array([269.686,1002,78,0,23,0,0,0,0]).reshape(1,-1)
 		class_result, _ = classify_weather(test_input) 
 		# Ensure that 'clear' class is returned
-		
+		self.assertEqual(class_result, 'clear')
+
 	def test_rainy_classification_output(self):
 		test_input = np.array([279.626,998,99,1,314,0.3,0,0,88]).reshape(1,-1)
 		class_result, _ = classify_weather(test_input) 
 		# Ensure that 'rainy' class is returned
-		
+		self.assertEqual(class_result, 'rainy')
 
 	def test_foggy_classification_output(self):
 
@@ -45,6 +53,7 @@ class TestUnit(unittest.TestCase):
 		class_result, _ = classify_weather(test_input) 
 
 		# Ensure that 'foggy' class is returned
+		self.assertEqual(class_result, 'foggy')
 		
 if __name__ == '__main__':
 	unittest.main()
