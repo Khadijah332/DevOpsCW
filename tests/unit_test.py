@@ -30,30 +30,41 @@ class TestUnit(unittest.TestCase):
 	# Complete this function to test that the model can be loaded correctly
 	def test_model_can_be_loaded(self):
 		model = load_model()
-		#checks model is not None
-		self.assertIsNone(model)
+		#The test ensures model is loaded and not none
+		self.assertIsNotNone(model)
 		
 
 	# Test model classification is within the 9 classes, each time for a different class with three different inputs
 	def test_clear_classification_output(self):
-		test_input = np.array([269.686,1002,78,0,23,0,0,0,0]).reshape(1,-1)
-		class_result, _ = classify_weather(test_input) 
-		# Ensure that 'clear' class is returned
-		self.assertEqual(class_result, 'clear')
+		test_input = np.array([
+			[269.686,1002,78,0,23,0,0,0,0],	
+        	[270.0, 1005, 80, 1, 30, 0, 0, 0, 5],
+        	[271.0, 1008, 75, 2, 40, 0, 0, 0, 10]
+			])
+		for features in test_input:
+			class_result, _ = classify_weather(features.reshape(1,-1))
+			self.assertEqual(class_result, 'clear')# Ensure that 'clear' class is returned
 
 	def test_rainy_classification_output(self):
-		test_input = np.array([279.626,998,99,1,314,0.3,0,0,88]).reshape(1,-1)
-		class_result, _ = classify_weather(test_input) 
-		# Ensure that 'rainy' class is returned
-		self.assertEqual(class_result, 'rainy')
+		test_input = np.array([
+			[279.626,998,99,1,314,0.3,0,0,88],	
+			[280.0, 995, 95, 2, 320, 0.5, 0, 0, 90],
+        	[281.0, 993, 97, 3, 330, 0.7, 0, 0, 85]
+			])
+		for features in test_input:
+			class_result, _ = classify_weather(features.reshape(1,-1)) 
+			self.assertEqual(class_result, 'rainy')# Ensure that 'rainy' class is returned
 
 	def test_foggy_classification_output(self):
-
-		test_input = np.array([289.47,1015,88,2,300,0,0,0,20]).reshape(1,-1)
-		class_result, _ = classify_weather(test_input) 
-
-		# Ensure that 'foggy' class is returned
-		self.assertEqual(class_result, 'foggy')
+		test_input = np.array([
+			[289.47,1015,88,2,300,0,0,0,20],
+			[290.0, 1018, 90, 1, 310, 0, 0, 0, 25],
+			[291.5, 1019, 95, 3, 290, 0, 0, 0, 35]
+			])
+		for features in test_input:
+			class_result, _ = classify_weather(features.reshape(1,-1)) 
+			self.assertEqual(class_result, 'foggy')# Ensure that 'foggy' class is returned
+	
 		
 if __name__ == '__main__':
 	unittest.main()
