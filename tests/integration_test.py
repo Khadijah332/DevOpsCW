@@ -20,13 +20,17 @@ class TestModelAppIntegration(unittest.TestCase):
 			'rain_3h': '0',            # mm
 			'snow': '0',               # mm
 			'clouds': '20'             # %
-		}
+		} 
 
 		response = self.client.post('/', data=form_data)
-	
+		self.assertEqual(response.status_code, 200)
+
+
 		# Complete below
 		# Ensure that the result page (response.data) should include a weather prediction
 		self.assertIn(b'Weather', response.data)
+		
+		
 	
 		# Ensure that the result page should include a prediction time
 		self.assertIn(b'Prediction time', response.data)
@@ -43,3 +47,4 @@ class TestModelAppIntegration(unittest.TestCase):
 
 if __name__ == '__main__':
 	unittest.main()
+
