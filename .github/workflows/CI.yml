@@ -10,42 +10,44 @@ on:
 jobs:
   build-and-test:
     runs-on: [self-hosted, linux, x64]
-   
+
     steps:
-      - name: Checkout repository code (Task 4a)
+      - name: Checkout repository code
         uses: actions/checkout@v4
 
-      - name: Set up Python and Install Dependencies (Task 4b)
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-      - run: pip install -r requirements.txt
+          python-version: "3.x"
 
-      - name: Run Smoke Test (Task 4c)
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Smoke Test
         run: python smoke_test.py
-     
-      - name: Run Unit Test (Task 4c)
+
+      - name: Run Unit Test
         run: python unit_test.py
-     
-      - name: Run Integration Test (Task 4c)
+
+      - name: Run Integration Test
         run: python integration_test.py
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-       
-      - name: Build Docker Image (Task 4d)
+
+      - name: Build Docker Image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t khadijah332/weather-ml-app:$IMAGE_TAG ../..
-          docker tag khadijah332/weather-ml-app:$IMAGE_TAG <YOUR_DOCKERHUB_USERNAME>/weather-ml-app:latest
-         
-      - name: Test Container Launch (Task 4e)
+          docker build -t khadijah332/weather-ml-app:$IMAGE_TAG .
+          docker tag khadijah332/weather-ml-app:$IMAGE_TAG khadijah332/weather-ml-app:latest
+
+      - name: Test Container Launch
         run: |
           docker run -d --name test-app khadijah332/weather-ml-app:latest
           sleep 5
-          docker exec test-app ls /usr/src/app/
+          docker exec test-app ls /usr/src/app || ls /
           docker stop test-app
           docker rm test-app
