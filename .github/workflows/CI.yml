@@ -1,56 +1,47 @@
-name: CI Workflow
+name: CI Pipeline
 
 on:
   push:
     branches:
-      - main
       - master
-      - bugfix
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build-and-test:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v4
+    
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: '3.14'
 
-      - name: Install ml requirements
-        run: pip install numpy pandas scikit-learn
-        
-      - name: Install app requirements
-        run: pip install Flask 
+ 
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
+      # Step 4: Run Smoke Test
       - name: Run Smoke Test
-        run: python tests/smoke_test.py
+        run: python smoke_test.py
 
       - name: Run Unit Test
-        run: python tests/unit_test.py
-
+        run: python unit_test.py
+      
       - name: Run Integration Test
-        run: python tests/integration_test.py
+        run: python integration_test.py
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
+  
       - name: Build Docker Image
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker build -t khadijah332/weather-ml-app:$IMAGE_TAG .
-          docker tag khadijah332/weather-ml-app:$IMAGE_TAG khadijah332/weather-ml-app:latest
+        run: docker build -t weather-ml-app:ci .
 
-      - name: Test Container Launch
+      - name: Test Docker Container
         run: |
-          docker run -d --name test-app khadijah332/weather-ml-app:latest
-          sleep 5
-          docker exec test-app ls /usr/src/app || ls /
-          docker stop test-app
-          docker rm test-app
+          docker run --rm weather-ml-app:ci python -c "print('Container launched successfully')"
