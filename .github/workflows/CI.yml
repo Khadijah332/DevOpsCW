@@ -22,7 +22,10 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
+        
+      - name: set PYTHONPATH for testing
+        run: echo "PYTHONPATH=$GITHUB_WORKSPACE:$PYTHONPATH" >> $GITHUB_ENV
+      
       - name: Run Smoke Test
         run: python tests/smoke_test.py
 
