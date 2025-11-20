@@ -41,15 +41,15 @@ jobs:
 
       # Step 5: Run Smoke Test
       - name: Run Smoke Test
-        run: python tests/smoke_test.py
+        run: PYTHONPATH=$GITHUB_WORKSPACE python tests/smoke_test.py
 
       # Step 6: Run Unit Test
       - name: Run Unit Test
-        run: python tests/unit_test.py
+        run:  PYTHONPATH=$GITHUB_WORKSPACE python tests/unit_test.py
 
       # Step 7: Run Integration Test
       - name: Run Integration Test
-        run: python tests/integration_test.py
+        run: PYTHONPATH=$GITHUB_WORKSPACE python tests/integration_test.py
 
       # Step 8: Log in to DockerHub
       - name: Log in to DockerHub
