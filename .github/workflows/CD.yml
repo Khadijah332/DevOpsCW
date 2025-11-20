@@ -11,23 +11,23 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
+      # Step 1: Checkout the repo
+      - name: Checkout repository code
         uses: actions/checkout@v4
 
-      # Step 2: Start SSH agent with private key from secrets
+      # Step 2: SSH setup using secret key
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.ACTIONS_SSH_KEY_TWO }}
 
       # Step 3: Add production server to known hosts
-      - name: Add production server to known hosts
+      - name: Add Production server to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H 13.218.75.13 >> ~/.ssh/known_hosts || true
 
-      # Step 4: Docker login
+      # Step 4: Docker login using Personal Access Token
       - name: Docker login
         uses: docker/login-action@v3
         with:
@@ -44,11 +44,7 @@ jobs:
           docker push $DOCKER_REPO:$IMAGE_TAG
           docker push $DOCKER_REPO:latest
 
-      # Step 6: Test SSH connection (debug)
-      - name: Test SSH connection
-        run: ssh -v ubuntu@13.218.75.13 "echo Connected"
-
-      # Step 7: Deploy using SCP + Ansible
+      # Step 6: Deploy to production via Ansible
       - name: Deploy to Production
         run: |
           scp ./k8s-deployment.yml ubuntu@13.218.75.13:/tmp/k8s-deployment.yml
