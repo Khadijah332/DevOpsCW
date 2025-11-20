@@ -32,7 +32,7 @@ jobs:
           docker push $DOCKER_REPO:$IMAGE_TAG
           docker push $DOCKER_REPO:latest
 
-      # Step 4: SSH Setup using labsuser.pem
+      # Step 4: SSH Setup using labsuser.pem key
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -44,13 +44,13 @@ jobs:
           PRODUCTION_SERVER=ubuntu@13.218.75.13
           DOCKER_IMAGE=khadijah332/weather-ml-app:latest
 
-          # Update the deployment manifest to use the latest image
+          # Update the manifest to use the latest image
           sed -i "s|image: khadijah332/weather-ml-app:.*|image: $DOCKER_IMAGE|g" ./k8s-deployment.yml
 
-          # Copy the manifest to the Production server
+          # Copy the manifest to the Production server (disable host key checking)
           scp -o StrictHostKeyChecking=no ./k8s-deployment.yml $PRODUCTION_SERVER:/tmp/k8s-deployment.yml
 
-          # Apply the manifest via SSH
+          # Apply the manifest on the server
           ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER << 'EOF'
             sudo kubectl apply -f /tmp/k8s-deployment.yml
             sudo kubectl rollout status deployment/weather-ml-app
