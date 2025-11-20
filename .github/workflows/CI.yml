@@ -20,9 +20,12 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install ml requirements
+        run: pip install numpy pandas scikit-learn
         
+      - name: Install app requirements
+        run: pip install Flask 
+
       - name: set PYTHONPATH for testing
         run: echo "PYTHONPATH=$GITHUB_WORKSPACE:$PYTHONPATH" >> $GITHUB_ENV
       
