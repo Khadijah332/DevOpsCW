@@ -24,13 +24,13 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run Smoke Test
-        run: python smoke_test.py
+        run: python tests/smoke_test.py
 
       - name: Run Unit Test
-        run: python unit_test.py
+        run: python tests/unit_test.py
 
       - name: Run Integration Test
-        run: python integration_test.py
+        run: python tests/integration_test.py
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
