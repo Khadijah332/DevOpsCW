@@ -54,4 +54,3 @@ jobs:
 
           # Run Ansible playbook on Production Server
           ansible-playbook -i inventory.ini deploy_k8s.yml
-
