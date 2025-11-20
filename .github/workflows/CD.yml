@@ -11,47 +11,47 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
+      # Step 1: Checkout the code
+      - name: Checkout repository code
         uses: actions/checkout@v4
 
-      # Step 2: Log in to DockerHub
+      # Step 2: Set up SSH key from secret
+      - name: Install SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.LABSUSER_PEM }}
+
+      # Step 3: Add Production Server to known hosts
+      - name: Add Production Server to known_hosts
+        run: |
+          ssh-keyscan -H 13.218.75.13 >> ~/.ssh/known_hosts
+
+      # Step 4: Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 3: Build and push Docker image
+      # Step 5: Build and push Docker image
       - name: Build and Push Docker Image
         run: |
-          IMAGE_TAG=${{ github.sha }}
           DOCKER_REPO=khadijah332/weather-ml-app
+          IMAGE_TAG=${{ github.sha }}
           docker build -t $DOCKER_REPO:$IMAGE_TAG .
           docker tag $DOCKER_REPO:$IMAGE_TAG $DOCKER_REPO:latest
           docker push $DOCKER_REPO:$IMAGE_TAG
           docker push $DOCKER_REPO:latest
 
-      # Step 4: SSH Setup using labsuser.pem key
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.LABSUSER_PEM }}
-
-      # Step 5: Deploy updated Kubernetes manifest
-      - name: Deploy to Production Server
+      # Step 6: Deploy to Production via Ansible
+      - name: Run Ansible Deploy Playbook
         run: |
-          PRODUCTION_SERVER=ubuntu@13.218.75.13
-          DOCKER_IMAGE=khadijah332/weather-ml-app:latest
+          # Update image tag in Kubernetes manifest
+          sed -i "s|image: khadijah332/weather-ml-app:.*|image: khadijah332/weather-ml-app:latest|g" k8s-deployment.yml
+          
+          # Copy manifest to Production Server
+          scp k8s-deployment.yml ubuntu@13.218.75.13:/tmp/k8s-deployment.yml
 
-          # Update the manifest to use the latest image
-          sed -i "s|image: khadijah332/weather-ml-app:.*|image: $DOCKER_IMAGE|g" ./k8s-deployment.yml
+          # Run Ansible playbook on Production Server
+          ansible-playbook -i inventory.ini deploy_k8s.yml
 
-          # Copy the manifest to the Production server (disable host key checking)
-          scp -o StrictHostKeyChecking=no ./k8s-deployment.yml $PRODUCTION_SERVER:/tmp/k8s-deployment.yml
-
-          # Apply the manifest on the server
-          ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER << 'EOF'
-            sudo kubectl apply -f /tmp/k8s-deployment.yml
-            sudo kubectl rollout status deployment/weather-ml-app
-          EOF
