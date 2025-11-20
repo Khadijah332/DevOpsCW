@@ -26,9 +26,6 @@ jobs:
       - name: Install app requirements
         run: pip install Flask 
 
-      - name: set PYTHONPATH for testing
-        run: echo "PYTHONPATH=$GITHUB_WORKSPACE:$PYTHONPATH" >> $GITHUB_ENV
-      
       - name: Run Smoke Test
         run: python tests/smoke_test.py
 
