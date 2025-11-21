@@ -18,58 +18,43 @@ jobs:
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
-      # Step 1: Checkout the code
       - name: Checkout repository code
         uses: actions/checkout@v4
 
-      # Step 2: Debug - list files to verify paths
-      - name: List repository files
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -R
-
-      # Step 3: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
-      # Step 4: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install Flask numpy pandas scikit-learn
 
-      # Step 5: Run Smoke Test
       - name: Run Smoke Test
         run: PYTHONPATH=$GITHUB_WORKSPACE python tests/smoke_test.py
         continue-on-error: true
 
-      # Step 6: Run Unit Test
       - name: Run Unit Test
         run: PYTHONPATH=$GITHUB_WORKSPACE python tests/unit_test.py
         continue-on-error: true
 
-      # Step 7: Run Integration Test
       - name: Run Integration Test
         run: PYTHONPATH=$GITHUB_WORKSPACE python tests/integration_test.py
         continue-on-error: true
-
-      # Step 8: Log in to DockerHub
+        
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 9: Build Docker Image
       - name: Build Docker Image
         run: |
           docker build -t khadijah332/weather-ml-app:$IMAGE_TAG .
           docker tag khadijah332/weather-ml-app:$IMAGE_TAG khadijah332/weather-ml-app:latest
 
-      # Step 10: Test Docker Container Launch
       - name: Test Docker Container Launch
         run: |
           docker run --rm khadijah332/weather-ml-app:$IMAGE_TAG python -c "print('Container launched successfully')"
