@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: weather-ml-app
-        image: khadijah332/weather-ml-app:latest
+        image: khadijah332/weather-ml-app:v2
         ports:
         - containerPort: 5000
 ---
