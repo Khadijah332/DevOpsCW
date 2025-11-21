@@ -8,3 +8,4 @@
         export KUBECONFIG=/home/ubuntu/.kube/config
         minikube kubectl -- apply -f /tmp/k8s-deployment.yml
         minikube kubectl -- rollout status deployment/weather-ml-app-deployment
+
