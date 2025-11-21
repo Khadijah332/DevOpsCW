@@ -7,43 +7,49 @@ on:
       - master
 
 jobs:
-  deploy:
+  deploy-app:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      - name: Checkout code
+      # 1. Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Load SSH key for connecting to Production Server
-      - name: Add SSH key
+      # 2. Load SSH key (labsuser.pem)
+      - name: Load SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.ACTIONS_SSH_KEY }}
 
-      # Add Production server to known_hosts
-      - name: Add Production Server to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.PROD_SERVER_IP }} >> ~/.ssh/known_hosts
+      # 3. Add production server to known_hosts
+      - name: Add production host
+        run: ssh-keyscan -H ${{ secrets.PROD_SERVER_IP }} >> ~/.ssh/known_hosts || true
 
-      # Login to DockerHub
+      # 4. DockerHub login
       - name: Docker login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build + Push Docker image
-      - name: Build and push Docker image
+      # 5. Build + Push Docker image
+      - name: Build and Push Docker Image
         run: |
           DOCKER_REPO=khadijah332/weather-ml-app
           IMAGE_TAG=${{ github.sha }}
+
           docker build -t $DOCKER_REPO:$IMAGE_TAG .
           docker tag $DOCKER_REPO:$IMAGE_TAG $DOCKER_REPO:latest
+
           docker push $DOCKER_REPO:$IMAGE_TAG
           docker push $DOCKER_REPO:latest
 
-      # Run Ansible Playbook
-      - name: Deploy to Kubernetes via Ansible
+      # 6. Copy Kubernetes manifest to production server
+      - name: Copy Kubernetes Deployment File
+        run: |
+          scp -o StrictHostKeyChecking=no k8s-deployment.yml ubuntu@${{ secrets.PROD_SERVER_IP }}:/tmp/k8s-deployment.yml
+
+      # 7. Run Ansible Deployment
+      - name: Run Ansible Deployment
         run: |
           ansible-playbook -i inventory.ini deploy_k8s.yml
