@@ -7,34 +7,33 @@ on:
       - master
 
 jobs:
-  deploy-app:
+  deploy:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: SSH setup
-      - name: Install SSH key
+      # Load SSH key for connecting to Production Server
+      - name: Add SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.ACTIONS_SSH_KEY_TWO }}
+          ssh-private-key: ${{ secrets.ACTIONS_SSH_KEY }}
 
-      # Step 3: Add production server to known hosts
-      - name: Add Production server to known hosts
+      # Add Production server to known_hosts
+      - name: Add Production Server to known_hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H 13.218.75.13 >> ~/.ssh/known_hosts || true
+          ssh-keyscan -H ${{ secrets.PROD_SERVER_IP }} >> ~/.ssh/known_hosts
 
-      # Step 4: Docker login using GitHub secrets (old version)
+      # Login to DockerHub
       - name: Docker login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 5: Build and push Docker image
+      # Build + Push Docker image
       - name: Build and push Docker image
         run: |
           DOCKER_REPO=khadijah332/weather-ml-app
@@ -44,8 +43,7 @@ jobs:
           docker push $DOCKER_REPO:$IMAGE_TAG
           docker push $DOCKER_REPO:latest
 
-      # Step 6: Deploy to production using Ansible
-      - name: Deploy to Production
+      # Run Ansible Playbook
+      - name: Deploy to Kubernetes via Ansible
         run: |
-          scp ./k8s-deployment.yml ubuntu@13.218.75.13:/tmp/k8s-deployment.yml
-          ansible-playbook -i ./inventory.ini ./deploy_k8s.yml
+          ansible-playbook -i inventory.ini deploy_k8s.yml
