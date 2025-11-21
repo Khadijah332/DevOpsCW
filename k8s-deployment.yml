@@ -1,15 +1,9 @@
-# k8s-deployment.yml
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: weather-ml-app-deployment
-  labels:
-    app: weather-ml-app
 spec:
-  replicas: 2
-  strategy:
-    type: RollingUpdate
+  replicas: 1
   selector:
     matchLabels:
       app: weather-ml-app
@@ -19,9 +13,8 @@ spec:
         app: weather-ml-app
     spec:
       containers:
-      - name: weather-ml-container
-        image: <YOUR_DOCKERHUB_USERNAME>/weather-ml-app:latest
-        imagePullPolicy: Always
+      - name: weather-ml-app
+        image: khadijah332/weather-ml-app:latest
         ports:
         - containerPort: 5000
 ---
@@ -30,10 +23,11 @@ kind: Service
 metadata:
   name: weather-ml-app-service
 spec:
-  type: NodePort
   selector:
     app: weather-ml-app
+  type: NodePort
   ports:
-    - protocol: TCP
-      port: 5000
+    - port: 5000
       targetPort: 5000
+      nodePort: 30007
+
