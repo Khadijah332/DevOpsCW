@@ -43,11 +43,13 @@ jobs:
 
           docker push $DOCKER_REPO:$IMAGE_TAG
           docker push $DOCKER_REPO:latest
-
-      # 6. Copy Kubernetes manifest to production server
-      - name: Copy Kubernetes Deployment File
-        run: |
-          scp -o StrictHostKeyChecking=no k8s-deployment.yml ubuntu@${{ secrets.PROD_SERVER_IP }}:/tmp/k8s-deployment.yml
+          
+          - name: Copy Kubernetes Deployment File
+          run: |
+          echo "Running SCP..."
+          scp -vvv -o StrictHostKeyChecking=no k8s-deployment.yml ubuntu@${{ secrets.PROD_SERVER_IP }}:/tmp/k8s-deployment.yml
+          echo "Listing /tmp on server:"
+          ssh ubuntu@${{ secrets.PROD_SERVER_IP }} "ls -l /tmp"
 
       # 7. Run Ansible Deployment
       - name: Run Ansible Deployment
