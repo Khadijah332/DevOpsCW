@@ -1,0 +1,15 @@
+---
+- name:  Kubectl  installation
+  hosts: localhost
+  user: ubuntu
+  become: yes
+
+  tasks:
+    - name: Verify kubectl installation
+      shell:
+        cmd: kubectl version --client
+      register: kubectl_version
+
+    - name:  Show kubectl version
+      debug:
+        var: kubectl_version.stdout
