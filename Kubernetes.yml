@@ -1,0 +1,33 @@
+---
+- name: Verify Kubernetes installation
+  hosts: localhost
+  user: ubuntu
+
+  tasks:
+    - name: Verify kubectl is installed
+      shell:
+        cmd: kubectl version --client
+      register: kubectl_version
+
+    - name: Show kubectl version
+      debug:
+        var: kubectl_version.stdout
+
+    - name: Verify minikube is installed
+      shell:
+        cmd: minikube version
+      register: minikube_version
+
+    - name: Show minikube version
+      debug:
+        var: minikube_version.stdout
+
+    - name: Verify minikube is running
+      shell:
+        cmd: minikube status
+      register: minikube_status
+
+    - name: Show minikube status
+      debug:
+        var: minikube_status.stdout
+
