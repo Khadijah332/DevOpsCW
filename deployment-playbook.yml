@@ -1,0 +1,26 @@
+---
+- name: Deploy application to Kubernetes
+  hosts: localhost
+  user: ubuntu
+
+  tasks:
+    - name: Create Kubernetes deployment
+      shell:
+        cmd: kubectl create deployment kubernetes-bootcamp --image=jocatalin/ku>
+
+    - name: Expose deployment
+      shell:
+        cmd: kubectl expose deployment/kubernetes-bootcamp --type="NodePort" -->
+
+    - name: Scale deployment 
+      shell:
+        cmd: kubectl scale deployments/kubernetes-bootcamp --replicas=4
+
+    - name: Verify deployment
+      shell:
+        cmd: kubectl get all
+      register: k8s_status
+
+    - name: Kubernetes status
+      debug:
+        var: k8s_status.stdout
